@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css"/>
+  <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+  
+  <style>
+  canvas {position: absolute; top:0; bottom: 0; left: 0; right: 0; margin: auto; }
+  #x_axis { width: 120px; height: 40px; padding: 0.5em; position:center;top:450px; left:1100px;}
+  p {}
+  </style>
+  <script>
+   $(function() {
+    $( "#x_axis" ).draggable({ opacity: 0.35 });
+  });
+  </script>
+</head>
+<body>
+<!--<script src="jquery.js"></script>-->
+<script type="text/javascript" src="processing-1.4.1.min.js"></script>
+<script src="j3.json"></script>
+<script src="options.js"></script>
+<script src="util.js"></script>
+<script src="run.quickie.js"></script>
+<canvas id="canvas1" width="200" height="200"></canvas>
+<div id="x_axis" class="ui-widget-content" style="position:absolute;top:600;right:500px;">
+  <p> x - axis : sequence</p>
+</div>
+<script id="script1" type="text/javascript">
+"use strict";
+var aaa = document.getElementById('x_axis');
+aaa.style.top = 100;
+
+var initBounds = run(opt,data,"canvas1");
+//Array of variable names
+var arrNames = Object.keys(data)
+//Number of arrays sent
+var arrNum = Object.keys(data).length
+
+///////////////////////////////////////////////////////////////////////////////
+//    ZOOM OUT - double click for orginal view
+///////////////////////////////////////////////////////////////////////////////
+
+$('#canvas1').click(function(event) {
+    this.t1 = new Date();
+    $('#canvas1').click(function(event) {
+      var t2 = new Date();
+      var diffT = t2 - this.t1;
+      console.log('Double Click Time: ' + diffT);
+    });
+  });
+$('#canvas1').dblclick(function() {
+  initBounds = run(opt,data,"canvas1");
+});
+
+///////////////////////////////////////////////////////////////////////////////
+//    ZOOM IN - click, hold down, drag, release.
+///////////////////////////////////////////////////////////////////////////////
+
+$('#canvas1').mousedown(function(e) {
+  this.t1 = new Date();
+  this.posDown = getPosition(e);
+}).bind('mouseup', function(e) {
+  var t2 = new Date();
+  var posUp = getPosition(e);
+  var diffT = t2 - this.t1;
+  var diffr = Math.sqrt((posUp.x - this.posDown.x) * (posUp.x - this.posDown.x) +(posUp.y - this.posDown.y)*(posUp.y - this.posDown.y));
+
+  console.log('DiffT:'+ diffT + '      diffr:' + diffr)
+  if(diffT >= 300 & diffr >=5){
+    var xS = initBounds.x
+    var lBoundx = toGrid(Math.min(posUp.x , this.posDown.x ) , xS[0] , xS[1] , xS[2] , xS[3] );
+    var uBoundx = toGrid(Math.max(posUp.x , this.posDown.x ) , xS[0] , xS[1] , xS[2] , xS[3] );
+
+    var yS = initBounds.y
+    var lBoundy = toGrid(Math.max(posUp.y , this.posDown.y ) , yS[0] , yS[1] , yS[2] , yS[3] );
+    var uBoundy = toGrid(Math.min(posUp.y , this.posDown.y ) , yS[0] , yS[1] , yS[2] , yS[3] );
+
+    var tmpData = {};
+    tmpData[arrNames[0]] = [];
+    for(var i = 1 ; i < arrNum ; i++)
+      tmpData[arrNames[i]] = [];
+
+    for (var i = 0; i< data[arrNames[0]].length; i ++) {
+      //console.log(data.y[i] +'  '+ lBoundy +'  '+ data.y[i] +'  '+ uBoundy)
+      if(data[arrNames[0]][i] <= uBoundx & data[arrNames[0]][i] >= lBoundx & data[arrNames[1]][i] >= lBoundy & data[arrNames[1]][i] <= uBoundy)
+      {
+
+        tmpData[arrNames[0]].push(data[arrNames[0]][i]);
+        for(var j = 1 ; j < arrNum ; j++)
+          tmpData[arrNames[j]].push(data[arrNames[j]][i]);
+      }
+    };
+  
+    console.log(tmpData);
+    initBounds = run(opt,tmpData,"canvas1");
+  }
+});
+
+</script>
+
+</body>
+</html>
