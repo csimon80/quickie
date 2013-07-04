@@ -7,7 +7,7 @@ var opt = {
   "axisWidth":1.5,
   "mainWidth":1000,
   "mainLength":400,
-  "NumberOfTicksX":10,
+  "NumberOfTicksX":12,
   "NumberOfTicksY":10,  
   "pointRadius1":5,
   "pointWidth":.5,

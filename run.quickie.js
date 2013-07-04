@@ -1,27 +1,10 @@
 var run = function(options , data , element ){
 
-  function tickArray(a, b, NumberOfTicks){
-    for (var i=0, arr=[];i < NumberOfTicks; i++) arr.push(a + i * (b - a) / (NumberOfTicks - 1));
-    return arr;
-  }
-
-  function range(a){
-    if(data.x.length > 1) {
-      var minA = Math.min.apply(Math,a);
-      var maxA = Math.max.apply(Math,a);
-    } else {
-      var minA = a[0] - 1;
-      var maxA = a[0] + 1;
-    }
-    return [minA,maxA];
-  }
   //Array of variable names
   var arrNames = Object.keys(data)
-  //Number of arrays sent
-  var arrNum = Object.keys(data).length
 
   try {
-    if(arrNum<2)
+    if(arrNames.length<2)
       throw new Error("Not enought data to plot, In the future version this will result in a histogram.") 
   } catch (e) {
     alert(e.name + " " +e.message)
@@ -32,47 +15,33 @@ var run = function(options , data , element ){
   var mainWidth  = options.mainWidth;
   var mainLength = options.mainLength;
 
-  var rnge;
+  var box = boxRange(data,arrNames);
+  
+  var minX=box[0];  var maxX=box[1];
+  var minY=box[2];  var maxY=box[3];
 
-  var minX = (rnge = range(data[arrNames[0]]))[0]
-  var maxX = rnge[1]
+  // Mapping the canvas end points to the max and min points. No squeezing.
+  var squeeze=[1,1,1,1];
+  box = canvasBoxBoundary(mainWidth,mainLength,options,squeeze);
 
-  var minY = (rnge = range(data[arrNames[1]]))[0]
-  var maxY = rnge[1]
+  var x0data = box[0];  var x1data = box[1];
+  var y0data = box[2];  var y1data = box[3];
 
-  for(var i = 2 ; i < arrNum ; i++){
-    minY = Math.min((rnge = range(data[arrNames[i]]))[0],minY)
-    maxY = Math.max(rnge[1],maxY)
-  }
-// Mapping the canvas end points to the max and min points
-  var x0data = mainWidth - Math.round( mainWidth * (1 - options.boxPadx));
-  var x1data = mainWidth - Math.round( mainWidth * (options.boxPady));
+  // Mapping the canvas end points to the plot axis end points.
+  // Squeezing to insure that data values do not end up on x or y axis.
+  squeeze=[1.05,0.8,0.5,1.1];
+  box = canvasBoxBoundary(mainWidth,mainLength,options,squeeze)
 
-  var y0data = mainLength - Math.round( mainLength * (options.boxPadx));
-  var y1data = mainLength - Math.round( mainLength * (1 - options.boxPady));
-
-  var aSData ={};
-  aSData.x = [minX,maxX,x0data,x1data];
-  aSData.y = [minY,maxY,y0data,y1data];
-
-// Mapping the canvas end points to the plot axis end points
-  var x0 = mainWidth - Math.round( 1.05*mainWidth * (1 - options.boxPadx));
-  var x1 = mainWidth - Math.round( 0.8*mainWidth * (options.boxPady));
-
-  var y0 = mainLength - Math.round( 0.5*mainLength * (options.boxPadx));
-  var y1 = mainLength - Math.round( 1.1*mainLength * (1 - options.boxPady));
-
-  var lowerLeftX  = x0;// * 0.95 * (mainLength/mainWidth);
-  var lowerRightX = x1;// * 1.05;
-  var lowerLeftY  = y0;// * 1.05;
-  var upperLeftY  = y1;// * 0.95;
+  var lowerLeftX  = x0 = box[0];// * 0.95 * (mainLength/mainWidth);
+  var lowerRightX = x1 = box[1];// * 1.05;
+  var lowerLeftY  = y0 = box[2];// * 1.05;
+  var upperLeftY  = y1 = box[3];// * 0.95;
 
 /////////////////////////////////////// MOUSE CLICKING START //////////////////
   $('#'+element).click(function(event) {
     var position = getPosition(event);
     var xx = toGrid(position.x,minX,maxX,x0data,x1data).toPrecision(4);
     var yy = toGrid(position.y,minY,maxY,y0data,y1data).toPrecision(4);
-    p.println("X: " + xx + " Y: " +  yy);
   });
 ///////////////////////////////////// MOUSE CLICKING END //////////////////////
   
@@ -132,8 +101,10 @@ var run = function(options , data , element ){
 
       });
       plotType = ['lines','lines','lines','points'];
+
 ///////////////////////////////////// PLOT DATA ///////////////////////////////
-      for(var j = 1 ; j < arrNum ; j++) {
+
+      for(var j = 1 ; j < arrNames.length ; j++) {
         switch (plotType[j-1])
         {
         case 'points':
@@ -175,5 +146,10 @@ var run = function(options , data , element ){
   var canvas = document.getElementById(element);
   // attaching the sketch to the canvas
   var p = new Processing(canvas, sketch);
-  return aSData;
+
+  var boxBoundarydataBoundary ={};
+  boxBoundarydataBoundary.x = [minX,maxX,x0data,x1data];
+  boxBoundarydataBoundary.y = [minY,maxY,y0data,y1data];
+
+  return boxBoundarydataBoundary;
 }; ///////////////// END OF RUN /////////////////////////////
