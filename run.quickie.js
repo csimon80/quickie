@@ -16,32 +16,32 @@ var run = function(options , data , element ){
   var mainLength = options.mainLength;
 
   var box = boxRange(data,arrNames);
-  
-  var minX=box[0];  var maxX=box[1];
-  var minY=box[2];  var maxY=box[3];
+  scaleX={};  scaleY={};
+  scaleX.start=box[0];  scaleX.end=box[1];
+  scaleY.start=box[2];  scaleY.end=box[3];
 
   // Mapping the canvas end points to the max and min points. No squeezing.
   var squeeze=[1,1,1,1];
   box = canvasBoxBoundary(mainWidth,mainLength,options,squeeze);
 
-  var x0data = box[0];  var x1data = box[1];
-  var y0data = box[2];  var y1data = box[3];
+  scaleX.x0 = box[0];  scaleX.x1 = box[1];
+  scaleY.x0 = box[2];  scaleY.x1 = box[3];
 
   // Mapping the canvas end points to the plot axis end points.
   // Squeezing to insure that data values do not end up on x or y axis.
   squeeze=[1.05,0.8,0.5,1.1];
   box = canvasBoxBoundary(mainWidth,mainLength,options,squeeze)
 
-  var lowerLeftX  = x0 = box[0];// * 0.95 * (mainLength/mainWidth);
-  var lowerRightX = x1 = box[1];// * 1.05;
-  var lowerLeftY  = y0 = box[2];// * 1.05;
-  var upperLeftY  = y1 = box[3];// * 0.95;
+  var x0 = box[0];
+  var x1 = box[1];
+  var y0 = box[2];
+  var y1 = box[3];
 
 /////////////////////////////////////// MOUSE CLICKING START //////////////////
   $('#'+element).click(function(event) {
     var position = getPosition(event);
-    var xx = toGrid(position.x,minX,maxX,x0data,x1data).toPrecision(4);
-    var yy = toGrid(position.y,minY,maxY,y0data,y1data).toPrecision(4);
+    var xx = toGrid(position.x,scaleX).toPrecision(4);
+    var yy = toGrid(position.y,scaleY).toPrecision(4);
   });
 ///////////////////////////////////// MOUSE CLICKING END //////////////////////
   
@@ -52,6 +52,7 @@ var run = function(options , data , element ){
       p.size(mainWidth,mainLength);
       p.background(200);
       p.noLoop();
+      //p.frameRate(.5);
       var fontA = p.loadFont("courier");
       p.textFont(fontA, options.fontSize1);
     }
@@ -63,18 +64,18 @@ var run = function(options , data , element ){
       //axis values
       //
       p.fill(255);
-      p.line(lowerLeftX,y0,lowerRightX,y0); //x-axis
-      p.line(x0,lowerLeftY,x0,upperLeftY); //y-axis
+      p.line(x0,y0,x1,y0); //x-axis
+      p.line(x0,y0,x0,y1); //y-axis
 
 ///////////////////////////////////// X - AXIS ////////////////////////////////
       //x - ticks
-      var ticksX = tickArray(x0data, x1data, options.NumberOfTicksX);
+      var ticksX = tickArray(scaleX.x0, scaleX.x1, options.NumberOfTicksX);
 
       ticksX.forEach(function(x){
         p.fill(0);
         p.line(x,y0*0.99,x,y0*1.01);
 
-        var gridP = toGrid(x,minX,maxX,x0data,x1data)
+        var gridP = toGrid(x,scaleX)
                     .toPrecision(3)
                     .toString();
 
@@ -86,11 +87,11 @@ var run = function(options , data , element ){
 
 ///////////////////////////////////// Y - AXIS ////////////////////////////////
       //y - ticks
-      var ticksY = tickArray(y0data, y1data, options.NumberOfTicksY);
+      var ticksY = tickArray(scaleY.x0, scaleY.x1, options.NumberOfTicksY);
 
       ticksY.forEach(function(y){
         p.line(x0*0.99,y,x0*1.01,y);
-        var gridP = toGrid(y,minY,maxY,y0data,y1data)
+        var gridP = toGrid(y,scaleY)
                     .toPrecision(3)
                     .toString();
         p.textAlign('CENTER');
@@ -112,8 +113,8 @@ var run = function(options , data , element ){
           p.strokeWeight(options.pointWidth);
           data[arrNames[0]].forEach(function(xv,i) {
             p.ellipse(
-              toPlot(xv,minX,maxX,x0data,x1data),
-              toPlot(data[arrNames[j]][i],minY,maxY,y0data,y1data),
+              toPlot(xv,scaleX),
+              toPlot(data[arrNames[j]][i],scaleY),
               options.pointRadius1,
               options.pointRadius1
               );
@@ -128,10 +129,10 @@ var run = function(options , data , element ){
             var vy1 = data[arrNames[j]][i]
             var vy2 = data[arrNames[j]][i+1]
             p.line(
-              toPlot(vx1,minX,maxX,x0data,x1data),
-              toPlot(vy1,minY,maxY,y0data,y1data),
-              toPlot(vx2,minX,maxX,x0data,x1data),
-              toPlot(vy2,minY,maxY,y0data,y1data)
+              toPlot(vx1,scaleX),
+              toPlot(vy1,scaleY),
+              toPlot(vx2,scaleX),
+              toPlot(vy2,scaleY)
               )
           }
         break;  
@@ -148,8 +149,8 @@ var run = function(options , data , element ){
   var p = new Processing(canvas, sketch);
 
   var boxBoundarydataBoundary ={};
-  boxBoundarydataBoundary.x = [minX,maxX,x0data,x1data];
-  boxBoundarydataBoundary.y = [minY,maxY,y0data,y1data];
+  boxBoundarydataBoundary.x = scaleX;
+  boxBoundarydataBoundary.y = scaleY;
 
   return boxBoundarydataBoundary;
 }; ///////////////// END OF RUN /////////////////////////////

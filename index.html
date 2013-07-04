@@ -33,14 +33,12 @@
 
 var initBounds = run(opt,data,"canvas1");
 //Array of variable names
-
+ 
 ///////////////////////////////////////////////////////////////////////////////
 //    ZOOM OUT - double click for orginal view
 ///////////////////////////////////////////////////////////////////////////////
 
-$('#canvas1').dblclick(function() {
-  initBounds = run(opt,data,"canvas1");
-});
+$('#canvas1').dblclick(function() {initBounds = run(opt,data,"canvas1");});
 
 ///////////////////////////////////////////////////////////////////////////////
 //    ZOOM IN - click, hold down, drag, release.
@@ -53,12 +51,10 @@ $('#canvas1').mousedown(function(e) {
   var t2 = new Date();
   var posUp = getPosition(e);
   var diffT = t2 - this.t1;
-  var diffr = Math.sqrt(
-    (posUp.x - this.posDown.x)*(posUp.x - this.posDown.x)+(posUp.y - this.posDown.y)*(posUp.y - this.posDown.y));
+  var diffr = Math.sqrt((posUp.x - this.posDown.x)*(posUp.x - this.posDown.x)+(posUp.y - this.posDown.y)*(posUp.y - this.posDown.y));
 
   if(diffT >= 300 & diffr >=5){
-    var tmpData = getIntersectDataAndMouse(data,initBounds,this.posDown,posUp)
-  
+    var tmpData = getIntersectDataAndMouse(data,initBounds,this.posDown,posUp)  
     initBounds = run(opt,tmpData,"canvas1");
   }
 });

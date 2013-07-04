@@ -13,12 +13,12 @@ function getPosition(e) {
   return {"x": x, "y": y};
 };
 
-function toGrid (x ,start, end, x0, x1) {
-  return (start + (end - start) *  (x - x0) / (x1 - x0));
+function toGrid (x, scale) {
+  return (scale.start + (scale.end - scale.start) *  (x - scale.x0) / (scale.x1 - scale.x0));
 }
 
-function toPlot (X ,start, end, x0, x1) {
-  return (x0 + Math.round((x1 - x0) * (X - start) / (end - start)));;
+function toPlot (X, scale) {
+  return (scale.x0 + Math.round((scale.x1 - scale.x0) * (X - scale.start) / (scale.end - scale.start)));;
 }
 
 function tickArray(a, b, NumberOfTicks){
@@ -65,13 +65,13 @@ function getIntersectDataAndMouse(data, initBounds, startClick, endClick){
   var arrNames = Object.keys(data)
   var tmpData = {};
 
-  var xS = initBounds.x
-  var lBoundx = toGrid(Math.min(endClick.x , startClick.x ) , xS[0] , xS[1] , xS[2] , xS[3] );
-  var uBoundx = toGrid(Math.max(endClick.x , startClick.x ) , xS[0] , xS[1] , xS[2] , xS[3] );
+  var xScale = initBounds.x
+  var lBoundx = toGrid(Math.min(endClick.x , startClick.x ) , xScale );
+  var uBoundx = toGrid(Math.max(endClick.x , startClick.x ) , xScale );
 
-  var yS = initBounds.y
-  var lBoundy = toGrid(Math.max(endClick.y , startClick.y ) , yS[0] , yS[1] , yS[2] , yS[3] );
-  var uBoundy = toGrid(Math.min(endClick.y , startClick.y ) , yS[0] , yS[1] , yS[2] , yS[3] );
+  var yScale = initBounds.y
+  var lBoundy = toGrid(Math.max(endClick.y , startClick.y ) , yScale );
+  var uBoundy = toGrid(Math.min(endClick.y , startClick.y ) , yScale );
 
   
   tmpData[arrNames[0]] = [];
