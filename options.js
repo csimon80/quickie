@@ -7,12 +7,12 @@ var opt = {
   "axisWidth":1.5,
   "mainWidth":1000,
   "mainLength":400,
-  "NumberOfTicksX":12,
-  "NumberOfTicksY":10,  
+  "NumberOfTicksX":8,
+  "NumberOfTicksY":6,  
   "pointRadius1":5,
   "pointWidth":.5,
   "lineWidth":1,  
-  "fontSize1":14,
+  "fontSize1":12,
   "NumberOfSets":1,
   "title":"Plot Time Series Data"
 }
