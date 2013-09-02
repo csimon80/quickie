@@ -13,12 +13,12 @@ function getPosition(e) {
   return {"x": x, "y": y};
 };
 // Map physical data |->  canvas value
-function toGrid (x, scale) {
-  return (scale.start + (scale.end - scale.start) *  (x - scale.x0) / (scale.x1 - scale.x0));
+function toCanvas (x, canvas, physical) {
+  return (canvas.min + Math.round( (canvas.max - canvas.min) *   (x - physical.min) / (physical.max - physical.min)));
 }
 // Map canvas value |->  physical data
-function toPlot (X, scale) {
-  return (scale.x0 + Math.round((scale.x1 - scale.x0) * (X - scale.start) / (scale.end - scale.start)));;
+function toPhysical (X, canvas, physical) {
+  return (physical.min +(physical.max - physical.min) * (X - canvas.min) / (canvas.max - canvas.min));
 }
 
 function tickArray(a, b, NumberOfTicks){
@@ -58,20 +58,18 @@ function canvasBoxBoundary(opt , squeezeFactors , subStateObj){
   subStateObj.x.max = opt.mainWidth - Math.round( squeezeFactors[1]*opt.mainWidth * (opt.boxPady));
 
   subStateObj.y.min = opt.mainLength - Math.round( squeezeFactors[2]*opt.mainLength * (opt.boxPadx));
-  subStateObj.x.max = opt.mainLength - Math.round( squeezeFactors[3]*opt.mainLength * (1 - opt.boxPady));
+  subStateObj.y.max = opt.mainLength - Math.round( squeezeFactors[3]*opt.mainLength * (1 - opt.boxPady));
 }
 
-function getIntersectDataAndMouse(data, initBounds, startClick, endClick){
+function getIntersectDataAndMouse(data, state, startClick, endClick){
   var arrNames = Object.keys(data)
   var tmpData = {};
 
-  var xScale = initBounds.x
-  var lBoundx = toGrid(Math.min(endClick.x , startClick.x ) , xScale );
-  var uBoundx = toGrid(Math.max(endClick.x , startClick.x ) , xScale );
+  var lBoundx = toPhysical(Math.min(endClick.x , startClick.x ) , state.canvas.x, state.data.x );
+  var uBoundx = toPhysical(Math.max(endClick.x , startClick.x ) , state.canvas.x, state.data.x );
 
-  var yScale = initBounds.y
-  var lBoundy = toGrid(Math.max(endClick.y , startClick.y ) , yScale );
-  var uBoundy = toGrid(Math.min(endClick.y , startClick.y ) , yScale );
+  var lBoundy = toPhysical(Math.max(endClick.y , startClick.y ) , state.canvas.y, state.data.y );
+  var uBoundy = toPhysical(Math.min(endClick.y , startClick.y ) , state.canvas.y, state.data.y );
 
   
   tmpData[arrNames[0]] = [];

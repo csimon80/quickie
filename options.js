@@ -8,7 +8,7 @@ var opt = {
   "mainWidth":1000,
   "mainLength":400,
   "NumberOfTicksX":8,
-  "NumberOfTicksY":6,  
+  "NumberOfTicksY":8,  
   "pointRadius1":5,
   "pointWidth":.5,
   "lineWidth":1,  

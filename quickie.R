@@ -7,3 +7,6 @@ quickie = function(data){
 generate.index = function(){
 	z
 }
+
+
+

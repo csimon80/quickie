@@ -1,4 +1,13 @@
 var run = function(options , data , element ){
+  "use strict";
+  /*
+                      --- Creation of State ---
+  A state is defined with two spaces, the data space, that is the physical or
+  imported values to be plotted; and the canvas space, which are the integer 
+  values representing the pixel locations, a state also includes a one2one and
+  onto map between the two spaces. So, a state is a function of data, and
+  transformations.
+  */  
   var s = {
     axis:{
       x:{min:0,max:0},
@@ -13,7 +22,7 @@ var run = function(options , data , element ){
       y:{min:0,max:0}
     }
   };
-  
+
   //Array of variable names
   var arrNames = Object.keys(data)
 
@@ -65,43 +74,66 @@ var run = function(options , data , element ){
 
 ///////////////////////////////////// X - AXIS ////////////////////////////////
       //x - ticks
-      p.line(s.axis.x.min , s.axis.y.min,
-             s.axis.x.max , s.axis.y.min); //x-axis
+      var typeXaxis = "date";
+      p.line(s.axis.x.min,
+             s.axis.y.min,
+             s.axis.x.max,
+             s.axis.y.min); //x-axis
       //Determine tick positions at physcial data scale.
-      var ticksX = tickArray(scaleX.x0, scaleX.x1, options.NumberOfTicksX);
-
-      ticksX.forEach(function(x){
+      tickArray(s.canvas.x.min, s.canvas.x.max, options.NumberOfTicksX)
+      .forEach(function(x){
         p.fill(0);
-        p.line(x,y0*0.99,x,y0*1.01);
-
-        var gridP = toGrid(x,scaleX)
-                    .toPrecision(4)
-                    .toString();
-
+        p.line(x,
+               s.axis.y.min*0.99,
+               x,
+               s.axis.y.min*1.01
+               );
+        switch(typeXaxis){
+          case 'index':
+            var physcialValueText = toPhysical(x,s.canvas.x,s.data.x)
+                                    .toPrecision(4)
+                                    .toString();
+          break;
+          case 'date':
+            var physcialValueText = moment
+                                    .unix(toPhysical(x,s.canvas.x,s.data.x)|0)
+                                    .format("YYYY-MM-DD");
+          break;
+          case 'datetime':
+          break;
+        }
+        
         p.textAlign('CENTER');
         p.fill(10);
-        p.text(gridP , x - options.fontSize1/2 , y0*1.05);
+        p.text(physcialValueText , x - options.fontSize1/.4 , s.canvas.y.min*1.15);
       });
 
 ///////////////////////////////////// Y - AXIS ////////////////////////////////
       //y - ticks
-      p.line(x0,y0,x0,y1); //y-axis
+      p.line(s.axis.x.min,
+             s.axis.y.min,
+             s.axis.x.min,
+             s.axis.y.max); //y-axis
       //Determine tick positions at physcial data scale.
-      var ticksY = tickArray(scaleY.x0, scaleY.x1, options.NumberOfTicksY);
+      tickArray(s.canvas.y.min, s.canvas.y.max, options.NumberOfTicksY)
+      .forEach(function(y){
+        p.line(s.axis.x.min*0.99,
+               y,
+               s.axis.x.min*1.01,
+               y
+               );
 
-      ticksY.forEach(function(y){
-        p.line(x0*0.99,y,x0*1.01,y);
-        var gridP = toGrid(y,scaleY)
+        var physcialValueText = toPhysical(y,s.canvas.y,s.data.y)
                     .toPrecision(3)
                     .toString();
         p.textAlign('CENTER');
         p.fill(10);
-        p.text(gridP, x0 - 3 * options.fontSize1, y + options.fontSize1/2);
+        p.text(physcialValueText, s.canvas.x.min - 7 * options.fontSize1, y + options.fontSize1/3);
 
       });
-      plotType = ['lines','lines','lines','lines'];
 
 ///////////////////////////////////// PLOT DATA ///////////////////////////////
+      var plotType = ['lines','lines','lines','lines'];
 
       for(var j = 1 ; j < arrNames.length ; j++) {
         switch (plotType[j-1])
@@ -111,8 +143,8 @@ var run = function(options , data , element ){
           p.strokeWeight(options.pointWidth);
           data[arrNames[0]].forEach(function(xv,i) {
             p.ellipse(
-              toPlot(xv,scaleX),
-              toPlot(data[arrNames[j]][i],scaleY),
+              toCanvas(xv , s.canvas.x , s.data.x),
+              toCanvas(data[arrNames[j]][i], s.canvas.y, s.data.y),
               options.pointRadius1,
               options.pointRadius1
               );
@@ -122,15 +154,11 @@ var run = function(options , data , element ){
           p.fill(125);
           p.strokeWeight(options.lineWidth);
           for(var i = 0; i < data[arrNames[0]].length - 1 ; i++){
-            var vx1 = data[arrNames[0]][i]
-            var vx2 = data[arrNames[0]][i+1]
-            var vy1 = data[arrNames[j]][i]
-            var vy2 = data[arrNames[j]][i+1]
             p.line(
-              toPlot(vx1,scaleX),
-              toPlot(vy1,scaleY),
-              toPlot(vx2,scaleX),
-              toPlot(vy2,scaleY)
+              toCanvas(data[arrNames[0]][i]   , s.canvas.x, s.data.x),
+              toCanvas(data[arrNames[j]][i]   , s.canvas.y, s.data.y),
+              toCanvas(data[arrNames[0]][i+1] , s.canvas.x, s.data.x),
+              toCanvas(data[arrNames[j]][i+1] , s.canvas.y, s.data.y)
               )
           }
         break;  
@@ -146,9 +174,5 @@ var run = function(options , data , element ){
   // attaching the sketch to the canvas
   var p = new Processing(canvas, sketch);
 
-  var boxBoundarydataBoundary ={};
-  boxBoundarydataBoundary.x = scaleX;
-  boxBoundarydataBoundary.y = scaleY;
-
-  return boxBoundarydataBoundary;
+  return s;
 }; ///////////////// END OF RUN /////////////////////////////
