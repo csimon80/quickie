@@ -7,7 +7,24 @@ var run = function(options , data , element ){
   values representing the pixel locations, a state also includes a one2one and
   onto map between the two spaces. So, a state is a function of data, and
   transformations.
-  */  
+  */
+
+  /*
+  Determine the type of value alone the x-axis, 'string' (for Date), 'number'
+  for index.
+  */
+  var arrNames = Object.keys(data);
+  switch data[arrNames[0]][0]
+  {
+  case 'number':
+    console.log("X - Axis is index");
+    break;
+  case 'string':
+    console.log("X - Axis are dates");
+    
+    break;
+  }
+
   var s = {
     axis:{
       x:{min:0,max:0},
@@ -24,7 +41,6 @@ var run = function(options , data , element ){
   };
 
   //Array of variable names
-  var arrNames = Object.keys(data)
 
   try {
     if(arrNames.length<2)
@@ -32,8 +48,6 @@ var run = function(options , data , element ){
   } catch (e) {
     alert(e.name + " " +e.message)
   }
-
-  var sketch = new Processing.Sketch();
   // Get min,max for both x and y of physical data.
   boxRange(data , arrNames , s.data);
   // Mapping the canvas end points |-> to physcial data. No squeezing.
@@ -51,7 +65,7 @@ var run = function(options , data , element ){
     var yy = toGrid(position.y,scaleY).toPrecision(4);
   });
 *//////////////////////////////////// MOUSE CLICKING END //////////////////////
-  
+  var sketch = new Processing.Sketch();
   sketch.attachFunction = function(p) {
 
     p.setup = function () {
@@ -133,7 +147,7 @@ var run = function(options , data , element ){
       });
 
 ///////////////////////////////////// PLOT DATA ///////////////////////////////
-      var plotType = ['lines','lines','lines','lines'];
+      var plotType = ['points','points','points','points'];
 
       for(var j = 1 ; j < arrNames.length ; j++) {
         switch (plotType[j-1])

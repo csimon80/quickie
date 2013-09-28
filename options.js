@@ -9,7 +9,7 @@ var opt = {
   "mainLength":400,
   "NumberOfTicksX":8,
   "NumberOfTicksY":8,  
-  "pointRadius1":5,
+  "pointRadius1":2,
   "pointWidth":.5,
   "lineWidth":1,  
   "fontSize1":12,
